@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: Cloudformation Template for State Machine deployment
+#Todo
+Parameters:
+ SecurityGroups:
+   Type: AWS::SSM::Parameter::Value<List<String>>
+   Default: /acs/private/deploy/common/securityGroups
+ Subnets:
+   Type: AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>
+   Default: /acs/private/deploy/common/subnetGroups
+ ECSCluster:
+   Type: AWS::SSM::Parameter::Value<String>
+   Default: /ace/private/deploy/common/ecsClusterName
+ BucketName:
+    Type: String
+    Description: The name of the S3 Bucket to create
+    Default: acs-lambda-storage-bucket
+
+Resources:                 
+#S3 private bucket to store lambda code
+# Generic State Machine for calling start and check dataload batch lambdas
+ ExecuteDataloadBatchSM:
+   Type: AWS::StepFunctions::StateMachine
+   Properties:
+     DefinitionS3Location:
+       Bucket: '{{resolve:ssm:/acs/s3/lambda-landing/PrivateBucketName}}'
+       Key: deploy/dataload-batch-state-machines/src/acs-execute-dataload-batch.json
+     DefinitionSubstitutions:
+       startDataloadFunction : !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:acs-start-dataload-batch'
+       checkDataloadFunction : !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:acs-check-dataload-batch-status'
+     RoleArn: '{{resolve:ssm:/acs/lambda/vpcAccess/Arn}}'
+     StateMachineName: ace-execute-dataload-batch
+     StateMachineType: STANDARD
+     TracingConfiguration:
+       Enabled: False
+
+# Generic State machine for calling file command lambda and waiting for results
+ FilecommandSM:
+   Type: AWS::StepFunctions::StateMachine
+   Properties:
+     DefinitionS3Location:
+       Bucket: '{{resolve:ssm:/acs/s3/lambda-landing/PrivateBucketName}}'
+       Key: deploy/dataload-batch-state-machines/src/acs-file-command.json
+     DefinitionSubstitutions:
+       fileCommandFunction : !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:ace-s3-filecommand'
+     RoleArn: '{{resolve:ssm:/acs/lambda/vpcAccess/Arn}}'
+     StateMachineName: ace-file-command
+     StateMachineType: STANDARD
+     TracingConfiguration:
+       Enabled: False
+
+# G8581 - Accepted Transactions report
+ LoadWageRateIllinois:
+   Type: AWS::StepFunctions::StateMachine
+   Properties:
+     DefinitionS3Location:
+       Bucket: '{{resolve:ssm:/acs/s3/lambda-landing/PrivateBucketName}}'
+       Key: deploy/dataload-batch-state-machines/src/acs-wage-rate-illinois.json
+     DefinitionSubstitutions:
+       filecommandSM: !Sub 'arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:ace-file-command'
+       executeDataloadBatchSM: !Sub 'arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:ace-execute-dataload-batch'
+       ECSCluster: !Ref ECSCluster
+       SecurityGroupId1: !Select [0,!Ref SecurityGroups]
+       SubnetId1: !Select [0,!Ref Subnets]
+       SubnetId2: !Select [1,!Ref Subnets]
+       SubnetId3: !Select [2,!Ref Subnets]
+     RoleArn: '{{resolve:ssm:/acs/lambda/vpcAccess/Arn}}'
+     StateMachineName: acs-wage-rate-illinois
+     StateMachineType: STANDARD
+     TracingConfiguration:
+       Enabled: False

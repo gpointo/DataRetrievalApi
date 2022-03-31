@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: 'AWS::Serverless-2016-10-31'
+Parameters:
+ SecurityGroups:
+   Type: AWS::SSM::Parameter::Value<List<AWS::EC2::SecurityGroup::Id>>
+   Default: /acs/private/deploy/common/securityGroups
+ Subnets:
+   Type: AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>
+   Default: /acs/private/deploy/common/subnetGroups
+Resources:
+ StartDataloadBatchFunction:
+   Type: 'AWS::Serverless::Function'
+   Properties:
+     FunctionName: command-lambda
+     Handler: command-lambda.lambda_handler
+     Role: '{{resolve:ssm:/acs/lambda/vpcAccess/Arn}}'
+     Runtime: python3.8
+     Timeout: 30
+     CodeUri:
+         Bucket: '{{resolve:ssm:/acs/s3/lambda-landing/PrivateBucketName}}'
+         Key: acs-check-dataload-batch-status-lambda/src/check-dataload-batch-status.zip
+     VpcConfig:
+       SecurityGroupIds: !Ref SecurityGroups
+       SubnetIds: !Ref Subnets
+
+       #use Script to deploy code the run this 

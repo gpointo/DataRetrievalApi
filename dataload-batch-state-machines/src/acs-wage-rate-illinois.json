@@ -1,0 +1,80 @@
+{
+
+    "Comment": "State Machine for loading the Interface which loads data for the Illinois Wage Rate",
+     "StartAt": "Wait",
+     "States": {
+       "Wait": {
+         "Type": "Wait",
+         "TimestampPath": "$.startTimestamp",
+         "Next": "file-command"
+       },
+       "file-command": {
+         "Type": "Task",
+         "Resource": "arn:aws:states:::states:startExecution.waitForTaskToken",
+         "Parameters": {
+                 "StateMachineArn": "${filecommandSM}",
+                 "Input": {
+                   "dataloadBatch": "wageRateIllinois",
+                   "waitTime": 60,
+                   "waitLimit": 60,
+                   "EXECUTION_ID.$": "$.EXECUTION_ID",
+                   "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id",
+                   "TaskToken.$": "$$.Task.Token"
+                 }
+         },
+         "ResultPath": "$.FilecommandResult",
+         "Next": "acs-generic-dataload"
+       },
+       "acs-generic-dataload": {
+         "Type": "Task",
+         "Resource": "arn:aws:states:::ecs:runTask.waitForTaskToken",
+         "Parameters": {
+           "Cluster": "${ECSCluster}",
+           "TaskDefinition": "fmconnect-aws-scripts",
+           "LaunchType": "FARGATE",
+           "PlatformVersion": "1.3.0",
+           "NetworkConfiguration":{
+             "AwsvpcConfiguration":{
+               "Subnets": [
+                 "${SubnetId1}",
+                 "${SubnetId2}",
+                 "${SubnetId3}"
+               ],
+               "SecurityGroups": [
+                 "${SecurityGroupId1}",
+                 "${SecurityGroupId2}"
+               ],
+               "AssignPublicIp": "DISABLED"
+             }
+           },
+           "Overrides":{
+             "ContainerOverrides":[
+               {
+                 "Name": "fmconnect-aws-scripts",
+                 "Environment":[
+                   {
+                     "Name": "CMD",
+                     "Value": "acs_generic_dataload.ksh"
+                   },
+                   {
+                     "Name": "BATCH_NAME",
+                     "Value.$": "$.BATCH_NAME"
+                   },
+                   {
+                     "Name": "EXECUTION_ID",
+                     "Value.$": "$.EXECUTION_ID"
+                   },
+                   {
+                     "Name": "TASK_TOKEN",
+                     "Value.$": "$$.Task.Token"
+                   }
+                 ]
+               }
+             ]
+           }
+         },
+         "ResultPath": "$.AcsGenericDataloadResult",
+         "End": true
+       }
+     }
+   }

@@ -1,0 +1,50 @@
+{
+
+    "Comment": "A Re-usable Statemachine that handles the calling of the filecommand lambda in a loop as necessary",
+    "StartAt": "call-file-command",
+    "States": {
+      "call-file-command": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "Parameters": {
+          "FunctionName": "${fileCommandFunction}",
+          "Payload.$": "$"
+        },
+        "Next": "check-filecommand-status",
+        "ResultPath": "$.fileCommandResult",
+        "ResultSelector": {
+          "taskStatus.$": "$.Payload.taskStatus",
+          "totalWaitTime.$": "$.Payload.totalWaitTime"
+        }
+      },
+      "Wait": {
+        "Type": "Wait",
+        "SecondsPath": "$.waitTime",
+        "OutputPath": "$",
+        "Next": "call-file-command"
+      },
+      "check-filecommand-status": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Variable": "$.fileCommandResult.taskStatus",
+            "StringEquals": "FilesFound",
+            "Next": "Succeed"
+          },
+          {
+            "Variable": "$.fileCommandResult.taskStatus",
+            "StringEquals": "WaitLimitExceeded",
+            "Next": "Fail"
+          }
+        ],
+        "Default": "Wait",
+        "OutputPath": "$"
+      },
+      "Succeed": {
+        "Type": "Succeed"
+      },
+      "Fail": {
+        "Type": "Fail"
+      }
+    }
+  }

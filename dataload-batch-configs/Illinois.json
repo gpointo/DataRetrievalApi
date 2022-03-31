@@ -1,0 +1,27 @@
+{
+    "Schedule": {
+        "stateMachineName": "acs-load-Illinois",
+        "scheduleType": "Daily",
+        "startTime": "07:00:00"
+    },
+    "DataloadBatch": {
+        "dataloadRequestItem": [
+            {
+                "executionSeqNum": 1,
+                "requestType": "INSERT",
+                "request": {
+                    "schema": "postgres",
+                    "tableName": "ILLINOIS_WAGE_RATE",
+                    "options": [
+                        "format csv",
+                        "header true",
+                        "delimiter ''|''",
+                        "null ''''"
+                    ],
+                    "s3Bucket": "%ACS_S3_BUCKET%",
+                    "s3Key": "prepare/cin/dflt/SRVG_LN_PMT_TRAN_RPT_GEND/process/%LOADREADY_FILE_NAME%"
+                }
+            }
+        ]
+    }
+}

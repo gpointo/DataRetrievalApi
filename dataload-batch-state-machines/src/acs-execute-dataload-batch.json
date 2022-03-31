@@ -1,0 +1,65 @@
+{
+
+    "Comment": "A Re-usable Statemachine that handles the calling of a data load batch, waiting for it's completion, and sending a callback to the calling resource",
+    "StartAt": "start-dataload-batch",
+    "States": {
+      "start-dataload-batch": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "Parameters": {
+          "FunctionName": "${startDataloadFunction}",
+          "Payload": {
+            "dataloadBatch.$": "$.dataloadBatch",
+            "TaskToken.$": "$.TaskToken"
+          }
+        },
+        "Next": "check-dataload-batch-status",
+        "ResultPath": "$.startDataloadBatchResult",
+        "ResultSelector": {
+          "transactionStatusResourcePath.$": "$.Payload.transactionStatusResourcePath"
+        }
+      },
+      "check-dataload-batch-status": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "Parameters": {
+          "FunctionName": "${checkDataloadFunction}",
+          "Payload.$": "$"
+        },
+        "Next": "is-dataload-batch-done",
+        "ResultPath": "$.checkDataloadBatchResult",
+        "ResultSelector": {
+          "taskStatus.$": "$.Payload.taskStatus"
+        }
+      },
+      "Wait": {
+        "Type": "Wait",
+        "Seconds": 30,
+        "OutputPath": "$",
+        "Next": "check-dataload-batch-status"
+      },
+      "is-dataload-batch-done": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Variable": "$.checkDataloadBatchResult.taskStatus",
+            "StringEquals": "Completed",
+            "Next": "Succeed"
+          },
+          {
+            "Variable": "$.checkDataloadBatchResult.taskStatus",
+            "StringEquals": "Failed",
+            "Next": "Fail"
+          }
+        ],
+        "Default": "Wait",
+        "OutputPath": "$"
+      },
+      "Succeed": {
+        "Type": "Succeed"
+      },
+      "Fail": {
+        "Type": "Fail"
+      }
+    }
+  }
