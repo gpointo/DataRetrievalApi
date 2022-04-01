@@ -1,0 +1,210 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploy Lambda code into S3 buckets
+
+Parameters:    
+  codeBuildName:
+    Type: String
+    Default: dataRetrievalApiBuild
+    Description: A name for the CodeBuild Job
+  GitHubOwner:
+    Type: String
+    AllowedPattern: "[A-Za-z0-9-]+"
+    Description: The Owner of the GitHub Repo
+    Default: gpointo
+  GitHubRepo:
+    Type: String
+    Description: The name of the GitHub Repo
+    Default: DataRetrievalApi
+  GitHubBranch:
+    Type: String
+    AllowedPattern: "[A-Za-z0-9-]+"
+    Description: The name of the GitHub Repo Branch which should be used
+    Default: main
+  TargetS3BucketName:
+    Type: String
+    AllowedPattern: "[A-Za-z0-9-]+"
+    Description: The name of the S3 bucket where the artifact will be stored
+    Default: retreivedata-landing-lambda
+  PipelineArtifactsBucket:
+    Type: String
+    AllowedPattern: "[A-Za-z0-9-]+"
+    Description: The name of the S3 bucket where the artifact will be stored
+    Default: codepipeline-us-east-1-785665804025
+Resources:
+  TargetS3Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Ref TargetS3BucketName
+  CreateCodeBuildPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: CodeBuildAccess_DataRetrieval_ACS
+      Description: "Policy for access to logs and ACS S3 Buckets"
+      Path: "/"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: VisualEditor0
+            Effect: Allow
+            Action: s3:*
+            Resource: '*'
+          - Sid: VisualEditor1
+            Effect: Allow
+            Action: logs:*
+            Resource: '*'
+          - Sid: VisualEditor2
+            Effect: Allow
+            Action: codebuild:*
+            Resource: '*'
+  CodeBuildRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      ManagedPolicyArns: [
+        !Ref CreateCodeBuildPolicy
+      ]
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - "codebuild.amazonaws.com"
+      Path: /
+      RoleName: CodeBuild_DataRetrieval_Role_ACS
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: 'Lambda_Bucket_Drop_Role'
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codepipeline.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Ref CreateCodePipelinePolicy
+  CreateCodePipelinePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: Lambda_Bucket_Drop_Policy_ACS
+      Description: "Policy for the Codepipeline for ACS"
+      Path: "/"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: VisualEditor4
+            Effect: Allow
+            Action: [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:GetObjectVersion",
+                "s3:GetBucketAcl",
+                "s3:GetBucketLocation"
+            ]
+            Resource: [
+              "arn:aws:s3:::codepipeline-us-east-1-*",
+              "arn:aws:s3:::retreivedata-landing-lambda"
+            ]
+          - Sid: VisualEditor1
+            Effect: Allow
+            Action: logs:*
+            Resource: '*'
+          - Sid: VisualEditor3
+            Effect: Allow
+            Action: codebuild:*
+            Resource: '*'
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      ServiceRole: !Ref CodeBuildRole
+      Name: !Ref codeBuildName
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:4.0
+        PrivilegedMode: True
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: |
+          version: 0.2
+          phases:
+            post_build:
+              commands:
+                - ls
+  CodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: DataRetrievalpipe
+      ArtifactStore:
+        Type: S3
+        Location: !Ref PipelineArtifactsBucket
+      RestartExecutionOnUpdate: true
+      RoleArn: arn:aws:iam::841688515269:role/service-role/AWSCodePipelineServiceRole-us-east-1-acs-project-pipeline
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              InputArtifacts: []
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Version: '1'
+                Provider: GitHub
+              OutputArtifacts:
+                - Name: SourceArtifact  
+              Configuration:
+                Owner: !Ref GitHubOwner
+                Repo: !Ref GitHubRepo
+                Branch: !Ref GitHubBranch
+                PollForSourceChanges: false
+                OAuthToken: "{{resolve:secretsmanager:acs/github/token:SecretString:GITHUB_PERSONAL_TOKEN}}"
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: CodeBuild
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: '1'
+              InputArtifacts:
+                - Name: SourceArtifact
+              OutputArtifacts:
+                - Name: BuildArt
+              Configuration:
+                ProjectName: !Ref CodeBuildProject
+              RunOrder: 1
+        - Name: Deploy
+          Actions:
+            - Name: S3Deploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: S3
+                Version: '1'
+              InputArtifacts:
+                - Name: BuildArt
+              Configuration:
+                BucketName: !Ref TargetS3Bucket
+                Extract: 'true'
+              RunOrder: 1
+  GithubWebhook:
+    Type: 'AWS::CodePipeline::Webhook'
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: "{{resolve:secretsmanager:acs/github/token:SecretString:GITHUB_PERSONAL_TOKEN}}"
+      RegisterWithThirdParty: true
+      Filters:
+        - JsonPath: "$.ref"
+          MatchEquals: refs/heads/{Branch}
+      TargetPipeline: !Ref CodePipeline
+      TargetAction: Source
+      TargetPipelineVersion: !GetAtt CodePipeline.Version
+  
+ 
