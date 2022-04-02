@@ -56,8 +56,8 @@ Resources:
             build:
               commands:
                 - mkdir deploy
-                - zip -r deploy/* dataload-batch-state-machines/src/*
-                - cp -r deploy/* dataload-batch-configs/*
+                - cp -a dataload-batch-state-machines/src/* deploy/
+                - cp -a /dataload-batch-configs/* deploy/
                 - zip -r deploy/check-dataload-batch-status.zip check-dataload-batch-status-lambda/src/*
                 - zip -r deploy/command-lambda.zip  command-lambda/src/*
                 - zip -r deploy/acs-schedule-state-macines.zip schedule-state-machine-lambda/src/*

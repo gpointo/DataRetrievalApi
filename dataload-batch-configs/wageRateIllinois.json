@@ -14,7 +14,7 @@
                     "tableName": "ILLINOIS_WAGE_RATE",
                     "options": [
                         "format csv",
-                        "header true",
+                        "header false",
                         "delimiter ''|''",
                         "null ''''"
                     ],
