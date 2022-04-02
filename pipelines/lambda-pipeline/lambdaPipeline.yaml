@@ -36,90 +36,10 @@ Resources:
     DeletionPolicy: Delete
     Properties:
       BucketName: !Ref TargetS3BucketName
-  CreateCodeBuildPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      ManagedPolicyName: CodeBuildAccess_DataRetrieval_ACS
-      Description: "Policy for access to logs and ACS S3 Buckets"
-      Path: "/"
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Sid: VisualEditor0
-            Effect: Allow
-            Action: s3:*
-            Resource: '*'
-          - Sid: VisualEditor1
-            Effect: Allow
-            Action: logs:*
-            Resource: '*'
-          - Sid: VisualEditor2
-            Effect: Allow
-            Action: codebuild:*
-            Resource: '*'
-  CodeBuildRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      ManagedPolicyArns: [
-        !Ref CreateCodeBuildPolicy
-      ]
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action:
-              - 'sts:AssumeRole'
-            Effect: Allow
-            Principal:
-              Service:
-                - "codebuild.amazonaws.com"
-      Path: /
-      RoleName: CodeBuild_DataRetrieval_Role_ACS
-  CodePipelineRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: 'Lambda_Bucket_Drop_Role'
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          Effect: Allow
-          Principal:
-            Service: codepipeline.amazonaws.com
-          Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - !Ref CreateCodePipelinePolicy
-  CreateCodePipelinePolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      ManagedPolicyName: Lambda_Bucket_Drop_Policy_ACS
-      Description: "Policy for the Codepipeline for ACS"
-      Path: "/"
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Sid: VisualEditor4
-            Effect: Allow
-            Action: [
-                "s3:PutObject",
-                "s3:GetObject",
-                "s3:GetObjectVersion",
-                "s3:GetBucketAcl",
-                "s3:GetBucketLocation"
-            ]
-            Resource: [
-              "arn:aws:s3:::codepipeline-us-east-1-*",
-              "arn:aws:s3:::retreivedata-landing-lambda"
-            ]
-          - Sid: VisualEditor1
-            Effect: Allow
-            Action: logs:*
-            Resource: '*'
-          - Sid: VisualEditor3
-            Effect: Allow
-            Action: codebuild:*
-            Resource: '*'
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      ServiceRole: !Ref CodeBuildRole
+      ServiceRole: arn:aws:iam::841688515269:role/service-role/codebuild-DataRetreivalBuild-service-role
       Name: !Ref codeBuildName
       Artifacts:
         Type: CODEPIPELINE
@@ -133,9 +53,19 @@ Resources:
         BuildSpec: |
           version: 0.2
           phases:
-            post_build:
+            build:
               commands:
-                - ls
+                - mkdir deploy
+                - zip -r deploy/wageRateIllinois.json dataload-batch-configs/*
+                - zip -r deploy/check-dataload-batch-status.zip check-dataload-batch-status-lambda/src/*
+                - zip -r deploy/command-lambda  command-lambda/src/*
+                - zip -r deploy/acs-schedule-state-macines schedule-state-machine-lambda/src/*
+                - zip -r deploy/acs-start-dataload-batch start-dataload-batch-lambda/src/*
+          artifacts:
+            files:
+              - '**/*'
+            base-directory: "deploy*"
+            discard-paths: yes
   CodePipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:

@@ -20,7 +20,7 @@ Resources:
      Timeout: 30
      CodeUri:
          Bucket: '{{resolve:ssm:/acs/s3/lambda-landing/PrivateBucketName}}'
-         Key: acs-check-dataload-batch-status-lambda/src/check-dataload-batch-status.zip
+         Key: check-dataload-batch-status.zip
      VpcConfig:
        SecurityGroupIds: !Ref SecurityGroups
        SubnetIds: !Ref Subnets

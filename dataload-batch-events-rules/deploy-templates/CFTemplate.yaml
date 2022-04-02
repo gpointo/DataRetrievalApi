@@ -7,7 +7,7 @@ Resoucres:
       Description: "Time Base Trigger for Illinois interfact"
       Name: acs-Illinois-scan"
       RoleArn: '{{resolve:ssm:/acs/lambda/vpcAccess/Arn}}'
-      ScheduleExpression: *corn(01***)
+      ScheduleExpression: cron(0 8 1 * ? *)
       Targets:
         - Arn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:fmconnect-schedule-state-machine'
           Id: 'fmconnect-schedule-state-machine-Illinois'

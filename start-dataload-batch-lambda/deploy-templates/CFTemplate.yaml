@@ -9,12 +9,6 @@ Parameters:
  Subnets:
    Type: AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>
    Default: /acs/private/deploy/common/subnetGroups
- ConfigKeyBase:
-   Type: String
- DataloadServiceBaseUri:
-   Type: String
- SendingMessageAPIpath:
-   Type: String  
 Resources:
  StartDataloadBatchFunction:
    Type: 'AWS::Serverless::Function'
@@ -26,7 +20,7 @@ Resources:
      Timeout: 30
      CodeUri:
          Bucket: '{{resolve:ssm:/acs/s3/lambda-landing/PrivateBucketName}}'
-         Key: acs-start-dataload-batch-lambda/src/acs-start-dataload-batch-lambda.zip
+         Key: acs-start-dataload-batch.zip
      VpcConfig:
        SecurityGroupIds: !Ref SecurityGroups
        SubnetIds: !Ref Subnets
