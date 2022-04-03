@@ -1,1 +1,2 @@
 requests==2.25.0
+urllib2== 2.7.9
