@@ -58,9 +58,13 @@ Resources:
                 - mkdir deploy
                 - cp -a dataload-batch-state-machines/src/* deploy/
                 - cp -a dataload-batch-configs/* deploy/
-                - zip -r -D deploy/check-dataload-batch-status.zip check-dataload-batch-status-lambda/src/*
+                - cd check-dataload-batch-status-lambda/src/               
+                - zip -r -D deploy/check-dataload-batch-status.zip *
+                - cd ../../command-lambda/src/
                 - zip -r -D deploy/command-lambda.zip  command-lambda/src/*
+                - cd ../../schedule-state-machine-lambda/src/
                 - zip -r -D deploy/acs-schedule-state-machine.zip schedule-state-machine-lambda/src/*
+                - cd ../../start-dataload-batch-lambda/src/
                 - zip -r -D deploy/acs-start-dataload-batch.zip start-dataload-batch-lambda/src/*
           artifacts:
             files:
