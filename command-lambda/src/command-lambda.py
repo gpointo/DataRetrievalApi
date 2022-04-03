@@ -41,7 +41,6 @@ def dateConvert(date):
 
 
 def lambda_handler(event,context):
-#create bucket with configs put into ssm to get bucketname
     #configBucket=ssm.get_parameter(Name='acs/common/s3/PrivateBucket').get("Parameter").get('Value')
     print("Loading command-lambda function:",event)
     filecommandResult="Initializing"
