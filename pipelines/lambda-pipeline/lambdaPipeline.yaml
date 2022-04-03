@@ -75,8 +75,8 @@ Resources:
                 - cd ../
                 - cp -a start-dataload-batch-lambda/src/* deploy/
                 - cd deploy
-                - zip acs-start-dataload-batch.zip start-dataload-batch-lambda.py requirements.txt
-                - rm start-dataload-batch-lambda.py requirements.txt
+                - zip acs-start-dataload-batch.zip acs-start-dataload-batch.py requirements.txt
+                - rm acs-start-dataload-batch.py requirements.txt
                 - ls     
           artifacts:
             files:
