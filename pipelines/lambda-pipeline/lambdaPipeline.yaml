@@ -73,11 +73,12 @@ Resources:
                 - zip acs-schedule-state-machine.zip acs-schedule-state-machine.py requirements.txt
                 - rm acs-schedule-state-machine.py requirements.txt
                 - cd ../
+                - cd start-dataload-batch-lambda/src/
+                - cd ../
                 - cp -a start-dataload-batch-lambda/src/* deploy/
                 - cd deploy
-                - zip acs-start-dataload-batch.zip acs-start-dataload-batch.py requirements.txt
-                - rm acs-start-dataload-batch.py requirements.txt
-                - ls     
+                - zip acs-start-dataload-batch.zip acs-start-dataload-batch.py 
+                - rm acs-start-dataload-batch.py
           artifacts:
             files:
               - '**/*'
