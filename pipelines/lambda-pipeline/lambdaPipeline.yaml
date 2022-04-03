@@ -61,23 +61,18 @@ Resources:
                 - cp -a check-dataload-batch-status-lambda/src/*  deploy/
                 - cd deploy
                 - zip -r check-dataload-batch-status.zip check-dataload-batch-status.py requirements.txt
-                - cp check-dataload-batch-status.zip  deploy/
                 - cd ../
                 - cp -a command-lambda/src/*  deploy/
                 - cd deploy
                 - zip command-lambda.zip command-lambda.py requirements.txt
-                - cp command-lambda.zip  deploy/
                 - cd ../
                 - cp -a schedule-state-machine-lambda/src/* deploy/
                 - cd deploy
                 - zip acs-schedule-state-machine.zip acs-schedule-state-machine.py requirements.txt
-                - cp -a acs-schedule-state-machine.zip deploy/
                 - cd ../
                 - cp -a start-dataload-batch-lambda/src/* deploy/
                 - cd deploy
                 - zip acs-start-dataload-batch.zip start-dataload-batch-lambda.py requirements.txt
-                - cp -a acs-start-dataload-batch.zip deploy/
-                - cd ../
                 - ls     
           artifacts:
             files:
