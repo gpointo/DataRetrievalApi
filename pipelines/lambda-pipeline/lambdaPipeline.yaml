@@ -70,7 +70,7 @@ Resources:
                 - cd ../
                 - cp -a schedule-state-machine-lambda/src/* deploy/
                 - cd deploy
-                - zip acs-schedule-state-machine.zip 
+                - zip acs-schedule-state-machine.zip acs-schedule-state-machine.py requirements.txt
                 - rm acs-schedule-state-machine.py requirements.txt
                 - cd ../
                 - cp -a start-dataload-batch-lambda/src/* deploy/
