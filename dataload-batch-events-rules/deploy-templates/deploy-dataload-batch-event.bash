@@ -1,5 +1,5 @@
 aws cloudformation deploy \
-    --stack-name DataLoadBatchEvent \
+    --stack-name DataLoadBatchEvntRl \
     --template-file CFTemplate.yaml \
     --capabilities CAPABILITY_NAMED_IAM \
 	

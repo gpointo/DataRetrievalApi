@@ -11,7 +11,7 @@ Parameters:
    Default: /acs/private/deploy/common/subnetGroups
  ECSCluster:
    Type: AWS::SSM::Parameter::Value<String>
-   Default: /ace/private/deploy/common/ecsClusterName
+   Default: /ace/private/deploy/common/ECSDtRetrievalDtLoad
  BucketName:
     Type: String
     Description: The name of the S3 Bucket to create
@@ -25,7 +25,7 @@ Resources:
    Properties:
      DefinitionS3Location:
        Bucket: '{{resolve:ssm:/acs/s3/lambda-landing/PrivateBucketName}}'
-       Key: deploy/dataload-batch-state-machines/src/acs-execute-dataload-batch.json
+       Key: acs-execute-dataload-batch.json
      DefinitionSubstitutions:
        startDataloadFunction : !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:acs-start-dataload-batch'
        checkDataloadFunction : !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:acs-check-dataload-batch-status'
@@ -41,7 +41,7 @@ Resources:
    Properties:
      DefinitionS3Location:
        Bucket: '{{resolve:ssm:/acs/s3/lambda-landing/PrivateBucketName}}'
-       Key: deploy/dataload-batch-state-machines/src/acs-file-command.json
+       Key: acs-file-command.json
      DefinitionSubstitutions:
        fileCommandFunction : !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:ace-s3-filecommand'
      RoleArn: '{{resolve:ssm:/acs/lambda/vpcAccess/Arn}}'
@@ -56,15 +56,13 @@ Resources:
    Properties:
      DefinitionS3Location:
        Bucket: '{{resolve:ssm:/acs/s3/lambda-landing/PrivateBucketName}}'
-       Key: deploy/dataload-batch-state-machines/src/acs-wage-rate-illinois.json
+       Key: acs-wage-rate-illinois.json
      DefinitionSubstitutions:
        filecommandSM: !Sub 'arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:ace-file-command'
        executeDataloadBatchSM: !Sub 'arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:ace-execute-dataload-batch'
        ECSCluster: !Ref ECSCluster
        SecurityGroupId1: !Select [0,!Ref SecurityGroups]
        SubnetId1: !Select [0,!Ref Subnets]
-       SubnetId2: !Select [1,!Ref Subnets]
-       SubnetId3: !Select [2,!Ref Subnets]
      RoleArn: '{{resolve:ssm:/acs/lambda/vpcAccess/Arn}}'
      StateMachineName: acs-wage-rate-illinois
      StateMachineType: STANDARD

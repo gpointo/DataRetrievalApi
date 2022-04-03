@@ -1,14 +1,14 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Cloudfourmation template for state machine deployment
-Resoucres:
-  Illinois: 
-    Type:  AWS:Events:Rule
-    Properties: 
+Resources:
+  Illinois:
+    Type: AWS::Events::Rule
+    Properties:
       Description: "Time Base Trigger for Illinois interfact"
-      Name: acs-Illinois-scan"
+      Name: acsIllinoisScan
       RoleArn: '{{resolve:ssm:/acs/lambda/vpcAccess/Arn}}'
       ScheduleExpression: cron(0 8 1 * ? *)
       Targets:
         - Arn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:fmconnect-schedule-state-machine'
           Id: 'fmconnect-schedule-state-machine-Illinois'
-          Input: "{\"dataloadBatch\":\"Illinois\"}"
+          Input: "{\"dataloadBatch\":\"wageRateIllinois\"}"
