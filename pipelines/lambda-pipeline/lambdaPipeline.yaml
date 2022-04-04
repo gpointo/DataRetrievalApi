@@ -61,26 +61,30 @@ Resources:
                 - cp -a check-dataload-batch-status-lambda/src/*  deploy/
                 - cd deploy
                 - zip -r check-dataload-batch-status.zip check-dataload-batch-status.py requirements.txt
+                - aws s3 cp check-dataload-batch-status.zip s3://retreivedata-landing-lambda
                 - rm check-dataload-batch-status.py requirements.txt
                 - cd ../
                 - aws lambda update-function-code --function-name acs-check-dataload-batch-status --s3-bucket retreivedata-landing-lambda --s3-key check-dataload-batch-status.zip
                 - cp -a command-lambda/src/*  deploy/
                 - cd deploy
                 - zip command-lambda.zip command-lambda.py requirements.txt
+                - aws s3 cp command-lambda.zip s3://retreivedata-landing-lambda
                 - rm command-lambda.py requirements.txt
                 - cd ../
                 - aws lambda update-function-code --function-name command-lambda --s3-bucket retreivedata-landing-lambda --s3-key command-lambda.zip
                 - cp -a schedule-state-machine-lambda/src/* deploy/
                 - cd deploy
                 - zip acs-schedule-state-machine.zip acs-schedule-state-machine.py requirements.txt
+                - aws s3 cp acs-schedule-state-machine.zip s3://retreivedata-landing-lambda
+                - aws lambda update-function-code --function-name acs-schedule-state-machine --s3-bucket retreivedata-landing-lambda --s3-key acs-schedule-state-machine.zip
                 - rm acs-schedule-state-machine.py requirements.txt
                 - cd ../
-                - aws lambda update-function-code --function-name acs-schedule-state-machine --s3-bucket retreivedata-landing-lambda --s3-key acs-schedule-state-machine.zip
-                - cp -a start-dataload-batch-lambda/src/* deploy/
+                - cp -a acs-start-dataload-batch-lambda/src/acs-start-dataload-batch-lambda.py deploy/
                 - cd deploy
-                - zip acs-start-dataload-batch.zip acs-start-dataload-batch.py 
-                - rm acs-start-dataload-batch.py
-                - aws lambda update-function-code --function-name acs-start-dataload-batch-lambda --s3-bucket retreivedata-landing-lambda --s3-key acs-start-dataload-batch.zip
+                - zip acs-start-dataload-batch-lambda.zip acs-start-dataload-batch-lambda.py 
+                - rm acs-start-dataload-batch-lambda.py
+                - aws s3 cp acs-start-dataload-batch-lambda.zip s3://retreivedata-landing-lambda
+                - aws lambda update-function-code --function-name acs-start-dataload-batch-lambda --s3-bucket retreivedata-landing-lambda --s3-key acs-start-dataload-batch-lambda.zip
           artifacts:
             files:
               - '**/*'
@@ -128,20 +132,6 @@ Resources:
                 - Name: BuildArt
               Configuration:
                 ProjectName: !Ref CodeBuildProject
-              RunOrder: 1
-        - Name: Deploy
-          Actions:
-            - Name: S3Deploy
-              ActionTypeId:
-                Category: Deploy
-                Owner: AWS
-                Provider: S3
-                Version: '1'
-              InputArtifacts:
-                - Name: BuildArt
-              Configuration:
-                BucketName: !Ref TargetS3Bucket
-                Extract: 'true'
               RunOrder: 1
   GithubWebhook:
     Type: 'AWS::CodePipeline::Webhook'
