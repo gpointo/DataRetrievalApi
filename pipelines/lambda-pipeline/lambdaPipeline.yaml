@@ -63,20 +63,24 @@ Resources:
                 - zip -r check-dataload-batch-status.zip check-dataload-batch-status.py requirements.txt
                 - rm check-dataload-batch-status.py requirements.txt
                 - cd ../
+                - aws lambda update-function-code --function-name acs-check-dataload-batch-status --s3-bucket retreivedata-landing-lambda --s3-key check-dataload-batch-status.zip
                 - cp -a command-lambda/src/*  deploy/
                 - cd deploy
                 - zip command-lambda.zip command-lambda.py requirements.txt
                 - rm command-lambda.py requirements.txt
                 - cd ../
+                - aws lambda update-function-code --function-name command-lambda --s3-bucket retreivedata-landing-lambda --s3-key command-lambda.zip
                 - cp -a schedule-state-machine-lambda/src/* deploy/
                 - cd deploy
                 - zip acs-schedule-state-machine.zip acs-schedule-state-machine.py requirements.txt
                 - rm acs-schedule-state-machine.py requirements.txt
                 - cd ../
+                - aws lambda update-function-code --function-name acs-schedule-state-machine --s3-bucket retreivedata-landing-lambda --s3-key acs-schedule-state-machine.zip
                 - cp -a start-dataload-batch-lambda/src/* deploy/
                 - cd deploy
                 - zip acs-start-dataload-batch.zip acs-start-dataload-batch.py 
                 - rm acs-start-dataload-batch.py
+                - aws lambda update-function-code --function-name acs-start-dataload-batch-lambda --s3-bucket retreivedata-landing-lambda --s3-key acs-start-dataload-batch.zip
           artifacts:
             files:
               - '**/*'
