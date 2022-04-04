@@ -13,9 +13,8 @@ def lambda_handler(event,context):
     print("Response taskStatus: ",taskStatus)
     if taskStatus =='Completed' and TaskToken != 'NA':
         print('sendTaskSuccess')
-        SNF.send_task_success(taskToken=TaskToken,output=json.dumps(response.json(['requestStatus']))
     elif taskStatus =='Failed' and TaskToken != 'NA':
-        print('sendTaskSuccess')
+        print('sendTaskSduccess')
         SNF.send_task_failure(taskToken=TaskToken,error=str(response.status_code))
     except:
         print("Exception Encountered")
