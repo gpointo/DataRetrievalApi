@@ -16,12 +16,6 @@ def lambda_handler(event,context):
     elif taskStatus =='Failed' and TaskToken != 'NA':
         print('sendTaskSduccess')
         SNF.send_task_failure(taskToken=TaskToken,error=str(response.status_code))
-    except:
-        print("Exception Encountered")
-        if TaskToken != 'NA'
-          print('sendTaskFailure')
-          SFN.send_task_failure(taskToken=TaskToken,error='Exception Encountered in check-dataload-batch-status')
-        raise
     return{
         'taskStatus': taskStatus
     }
