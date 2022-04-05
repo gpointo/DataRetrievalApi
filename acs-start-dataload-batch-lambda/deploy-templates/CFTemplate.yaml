@@ -9,6 +9,8 @@ Parameters:
  Subnets:
    Type: AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>
    Default: /acs/private/deploy/common/subnetGroups
+ LambdaLayer:
+   Default: DataRetrieveLayer
 Resources:
  StartDataloadBatchFunction:
    Type: 'AWS::Serverless::Function'
@@ -24,3 +26,5 @@ Resources:
      VpcConfig:
        SecurityGroupIds: !Ref SecurityGroups
        SubnetIds: !Ref Subnets
+     Layers:
+       - !Ref LambdaLayer      
