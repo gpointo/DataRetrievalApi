@@ -1,2 +1,2 @@
 To install into your lambda layers dir type out this 
-pip install requests --target lambda-layers/python/lib/python3.7/site-packages --no-user
+pip install requests --target lambda-layers/python/ --no-user

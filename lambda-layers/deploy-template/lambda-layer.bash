@@ -1,5 +1,5 @@
 aws cloudformation deploy \
     --stack-name DataloadLambdaLayer \
-    --template-file CTFemplate.yaml \
+    --template-file CFTemplate.yaml \
     --capabilities CAPABILITY_NAMED_IAM \
 	

@@ -1,18 +1,18 @@
 AWSTemplateFormatVersion: "2010-09-09"
-
+Transform: 'AWS::Serverless-2016-10-31'
 Description: Cloudformation Template for State Machine deployment
-#Todo
 Parameters:
- LambdaLayer:
+ LambdaLayerName:
+   Type: String
    Default: DataRetrieveLayer
 Resources:                 
  LambdaLayer:
    Type: AWS::Serverless::LayerVersion
    Properties:
-     LayerName: !Ref LambdaLayer
-     ContentUri: lambda-layer.zip
+     LayerName: !Ref LambdaLayerName
+     ContentUri: s3://retreivedata-landing-lambda/lambda-layer.zip
      CompatibleRuntimes:
        - python3.6
        - python3.7
-      LicenseInfo: MIT
-      RetentionPolicy: Retain
+     LicenseInfo: MIT
+     RetentionPolicy: Retain
