@@ -11,7 +11,7 @@ Parameters:
    Default: /acs/private/deploy/common/subnetGroups
  LambdaLayer:
    Type: String
-   Default: arn:aws:lambda:us-east-1:841688515269:layer:DataRetrieveLayer:1
+   Default: arn:aws:lambda:us-east-1:841688515269:layer:DataRetrieveLayer:2
 Resources:
  StartDataloadBatchFunction:
    Type: 'AWS::Serverless::Function'
@@ -20,7 +20,7 @@ Resources:
      Handler: acs-check-dataload-batch-status.lambda_handler
      Role: '{{resolve:ssm:/acs/lambda/vpcAccess/Arn}}'
      Runtime: python3.8
-     Timeout: 30
+     Timeout: 40
      CodeUri:
          Bucket: '{{resolve:ssm:/acs/s3/lambda-landing/PrivateBucketName}}'
          Key: check-dataload-batch-status.zip
