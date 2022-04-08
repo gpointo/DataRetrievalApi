@@ -8,7 +8,8 @@ Parameters:
    Type: AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>
    Default: /acs/private/deploy/common/subnetGroups
  LambdaLayer:
-   Default: DataRetrieveLayer
+   Type: String
+   Default: arn:aws:lambda:us-east-1:841688515269:layer:DataRetrieveLayer:2
 Resources:
  StartDataloadBatchFunction:
    Type: 'AWS::Serverless::Function'

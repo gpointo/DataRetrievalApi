@@ -1,6 +1,6 @@
 {
     "Schedule": {
-        "stateMachineName": "acs-load-Illinois",
+        "stateMachineName": "acs-wage-rate-illinois",
         "scheduleType": "Daily",
         "startTime": "07:00:00"
     },

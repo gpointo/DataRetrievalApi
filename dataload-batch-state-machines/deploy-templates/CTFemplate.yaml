@@ -41,11 +41,11 @@ Resources:
    Properties:
      DefinitionS3Location:
        Bucket: '{{resolve:ssm:/acs/s3/lambda-landing/PrivateBucketName}}'
-       Key: acs-file-command.json
+       Key: command-lambda.json
      DefinitionSubstitutions:
-       fileCommandFunction : !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:ace-s3-filecommand'
+       fileCommandFunction : !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:command-lambda'
      RoleArn: '{{resolve:ssm:/acs/lambda/vpcAccess/Arn}}'
-     StateMachineName: ace-file-command
+     StateMachineName: command-lambda
      StateMachineType: STANDARD
      TracingConfiguration:
        Enabled: False
@@ -58,7 +58,7 @@ Resources:
        Bucket: '{{resolve:ssm:/acs/s3/lambda-landing/PrivateBucketName}}'
        Key: acs-wage-rate-illinois.json
      DefinitionSubstitutions:
-       filecommandSM: !Sub 'arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:ace-file-command'
+       filecommandSM: !Sub 'arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:command-lambda'
        executeDataloadBatchSM: !Sub 'arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:ace-execute-dataload-batch'
        ECSCluster: !Ref ECSCluster
        SecurityGroupId1: !Select [0,!Ref SecurityGroups]
